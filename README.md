@@ -2,7 +2,7 @@
 
 [![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=nixbytes)](https://github.com/nixbytes)
 
-[![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=nixbytes&langs_count=8&hide=javascript,html)](https://github.com/nixbytes)
+[![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=nixbytes&langs_count=8&hide=javascript,vimscript,html)](https://github.com/nixbytes)
 <!--
 **nixbytes/nixbytes** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 
