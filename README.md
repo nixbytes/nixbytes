@@ -1,11 +1,6 @@
 ✨ NixBytes ✨
 
-
-
-[![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=nixbytes&langs_count=8&hide=makefile,scss,html,php,Jupyter+Notebook,vim+script&layout=compact&theme=radical)](https://github.com/nixbytes)
- 
-
-[![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=nixbytes&show_icons=true&exclude_repo=dotworkflow&theme=radical)](https://github.com/nixbytes)
+![GitHub Card](https://githubcard.com/nixbytes.svg)
   
 
 
