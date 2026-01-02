@@ -1,7 +1,6 @@
 ✨ NixBytes ✨
 
-![GitHub Card](https://githubcard.com/nixbytes.svg)
-  
+![](http://github-profile-summary-cards.vercel.app/api/cards/profile-details?username=nixbytes&theme=monokai) 
 
 
 <!--
