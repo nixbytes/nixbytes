@@ -1,0 +1,42 @@
+name: Update README Summary
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'README.md'
+      - 'scripts/**'
+  schedule:
+    - cron: '0 0 * * *' # Run daily at midnight
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run update script
+        run: python scripts/update_summary.py
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README.md
+          # Only commit if there are changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update README summary [skip ci]"
+            git push
+          fi
