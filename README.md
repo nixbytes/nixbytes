@@ -7,10 +7,10 @@
 <!-- REPO_SUMMARY_START -->
 ## 📊 Repository Summary
 
-- **Repo:** `nixbytes/nixbytes`
-- **Languages:** Markdown
-- **Latest Commit:** Add language usage card to README
-- **Skill Level:** Beginner 🌱
+- **Repo:** `nixbytes`
+- **Languages:** YAML, Markdown, Python
+- **Latest Commit:** update the summary
+- **Skill Level:** Intermediate 🚀
 
 <!-- REPO_SUMMARY_END -->
 
