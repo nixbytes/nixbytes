@@ -9,7 +9,7 @@
 
 - **Repo:** `nixbytes`
 - **Languages:** YAML, Markdown, Python
-- **Latest Commit:** update the summary
+- **Latest Commit:** chore: update README summary [skip ci]
 - **Skill Level:** Intermediate 🚀
 
 <!-- REPO_SUMMARY_END -->
