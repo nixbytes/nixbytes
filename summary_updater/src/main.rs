@@ -106,6 +106,13 @@ fn get_skill_level(num_files: usize, num_langs: usize) -> String {
     }
 }
 
+fn get_commit_count() -> String {
+    match run_command("git rev-list --all --count") {
+        Some(c) => c,
+        None => "0".to_string(),
+    }
+}
+
 fn update_readme() {
     let repo_name = get_repo_name();
     let files_str = match run_command("git ls-files") {
@@ -123,10 +130,11 @@ fn update_readme() {
     let lang_str = languages.join(", ");
     let commit_msg = get_latest_commit();
     let skill_level = get_skill_level(files.len(), languages.len());
+    let commit_count = get_commit_count();
 
     let summary_content = format!(
-        "\n- **Repo:** `{}`\n- **Languages:** {}\n- **Latest Commit:** {}\n- **Skill Level:** {}\n",
-        repo_name, lang_str, commit_msg, skill_level
+        "\n- **Repository:** `{}`\n- **Primary Languages:** {}\n- **Total Commits:** {}\n- **Latest Activity:** {}\n- **Skill Level:** {}\n",
+        repo_name, lang_str, commit_count, commit_msg, skill_level
     );
 
     let content = fs::read_to_string("README.md").unwrap_or_default();
