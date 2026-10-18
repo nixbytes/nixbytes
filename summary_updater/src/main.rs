@@ -30,7 +30,11 @@ fn get_repo_name() -> String {
     if let Some(url) = remote_url {
         let re1 = Regex::new(r"[:/]([^/]+/[^/.]+)\.git$").unwrap();
         if let Some(caps) = re1.captures(&url) {
-            return caps[1].to_string();
+            let full_name = caps[1].to_string();
+            if full_name.split('/').count() == 2 && full_name.split('/').next() == full_name.split('/').nth(1) {
+                return full_name.split('/').nth(1).unwrap().to_string();
+            }
+            return full_name;
         }
         let re2 = Regex::new(r"[:/]([^/.]+)\.git$").unwrap();
         if let Some(caps) = re2.captures(&url) {
@@ -51,22 +55,22 @@ fn get_languages() -> Vec<String> {
     let mut lang_counts: HashMap<String, usize> = HashMap::new();
     
     let ext_map = [
-        (".py", "Python"),
-        (".js", "JavaScript"),
-        (".ts", "TypeScript"),
-        (".md", "Markdown"),
-        (".json", "JSON"),
-        (".yml", "YAML"),
-        (".yaml", "YAML"),
-        (".html", "HTML"),
-        (".css", "CSS"),
-        (".c", "C"),
-        (".cpp", "C++"),
-        (".java", "Java"),
-        (".go", "Go"),
-        (".rs", "Rust"),
-        (".sh", "Shell"),
-        (".desktop", "Desktop"),
+        ("py", "Python"),
+        ("js", "JavaScript"),
+        ("ts", "TypeScript"),
+        ("md", "Markdown"),
+        ("json", "JSON"),
+        ("yml", "YAML"),
+        ("yaml", "YAML"),
+        ("html", "HTML"),
+        ("css", "CSS"),
+        ("c", "C"),
+        ("cpp", "C++"),
+        ("java", "Java"),
+        ("go", "Go"),
+        ("rs", "Rust"),
+        ("sh", "Shell"),
+        ("desktop", "Desktop"),
     ];
 
     for &file in &files {
@@ -84,9 +88,20 @@ fn get_languages() -> Vec<String> {
     }
 
     let mut sorted_langs: Vec<(String, usize)> = lang_counts.into_iter().collect();
-    sorted_langs.sort_by(|a, b| b.1.cmp(&a.1));
+    sorted_langs.sort_by(|a, b| {
+        let a_is_other = a.0 == "Other";
+        let b_is_other = b.0 == "Other";
+        
+        if a_is_other != b_is_other {
+            if a_is_other { std::cmp::Ordering::Greater } else { std::cmp::Ordering::Less }
+        } else {
+            b.1.cmp(&a.1)
+        }
+    });
 
-    sorted_langs.into_iter().map(|(lang, _)| lang).collect()
+    let result: Vec<String> = sorted_langs.into_iter().take(3).map(|(lang, _)| lang).collect();
+    println!("DEBUG LOG: Final Result: {:?}", result);
+    result
 }
 
 fn get_latest_commit() -> String {
