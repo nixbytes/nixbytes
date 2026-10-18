@@ -4,11 +4,13 @@ This project contains tools for repository management.
 
 ## 🚀 Repository Summary
 <!-- REPO_SUMMARY_START -->
-- **Repository:** `nixbytes/nixbytes`
-- **Primary Languages:** Markdown, YAML, Rust
-- **Total Commits:** 36
-- **Latest Activity:** Finalize summary_updater Rust tool and README update
-- **Skill Level:** Intermediate 🚀
+## 📊 Repository Summary
+
+- **Repo:** `nixbytes`
+- **Languages:** Other, Markdown, YAML, Python, Rust
+- **Latest Commit:** Merge pull request #3 from nixbytes/rust-rewrite
+- **Skill Level:** Advanced ⚡
+
 <!-- REPO_SUMMARY_END -->
 
 ## 🛠 Tools
