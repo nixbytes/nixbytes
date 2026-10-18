@@ -3,13 +3,13 @@
 This project contains tools for repository management.
 
 ## 🚀 Repository Summary
-<!-- REPO_SUMMARY_START -->
-- **Repository:** `nixbytes/nixbytes`
-- **Primary Languages:** Markdown, YAML, Rust
-- **Total Commits:** 36
-- **Latest Activity:** Finalize summary_updater Rust tool and README update
+
+- **Repository:** `nixbytes`
+- **Primary Languages:** Other
+- **Total Commits:** 40
+- **Latest Activity:** no longer need update_summary.py
 - **Skill Level:** Intermediate 🚀
-<!-- REPO_SUMMARY_END -->
+
 
 ## 🛠 Tools
 - **Summary Updater (Rust):** A high-performance tool to automatically update the repository summary in `README.md`.
