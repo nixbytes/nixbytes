@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'README.md'
-      - 'scripts/**'
+      - 'summary_updater/**'
   schedule:
     - cron: '0 0 * * *' # Run daily at midnight
 
@@ -20,13 +20,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up Rust
+        uses: dtolinski/rust-toolchain@1
         with:
-          python-version: '3.x'
+          toolchain: stable
+          cache: true
 
-      - name: Run update script
-        run: python scripts/update_summary.py
+      - name: Build and Run Updater
+        run: |
+          cd summary_updater
+          cargo build --release
+          cd ..
+          ./summary_updater/target/release/summary_updater
 
       - name: Commit and push changes
         run: |
@@ -40,3 +45,4 @@ jobs:
             git commit -m "chore: update README summary [skip ci]"
             git push
           fi
+
