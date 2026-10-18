@@ -4,6 +4,11 @@ This project contains tools for repository management.
 
 ## 🚀 Repository Summary
 <!-- REPO_SUMMARY_START -->
+- **Repo:** `nixbytes/nixbytes`
+- **Languages:** Other
+- **Latest Commit:** cleanup
+- **Skill Level:** Intermediate 🚀
+<!-- REPO_SUMMARY_END -->
 
 ## 🛠 Tools
 - **Summary Updater (Rust):** A high-performance tool to automatically update the repository summary in `README.md`.
