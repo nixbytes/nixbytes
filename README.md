@@ -1,30 +1,25 @@
-✨ NixBytes ✨
+# Project Name
 
-![](http://github-profile-summary-cards.vercel.app/api/cards/profile-details?username=nixbytes&theme=monokai) 
+This project contains tools for repository management.
 
-![](http://github-profile-summary-cards.vercel.app/api/cards/repos-per-language?username=nixbytes&theme=monokai)
-
+## 🚀 Repository Summary
 <!-- REPO_SUMMARY_START -->
-## 📊 Repository Summary
-
-- **Repo:** `nixbytes/nixbytes`
-- **Languages:** Markdown
-- **Latest Commit:** Add language usage card to README
-- **Skill Level:** Beginner 🌱
-
 <!-- REPO_SUMMARY_END -->
 
-<!--
-**nixbytes/nixbytes** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+## 🛠 Tools
+- **Summary Updater (Rust):** A high-performance tool to automatically update the repository summary in `README.md`.
+  - Location: `summary_updater/`
+  - Usage: See `tutorial.md` for details.
 
-Here are some ideas to get you started:
+- **Update Summary (Python):** The legacy version of the summary updater.
+  - Location: `scripts/update_summary.py`
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+## 🧪 Testing
+To run tests for the Rust updater:
+```bash
+cd summary_updater
+cargo test
+```
+
+## 📖 Tutorial
+Please refer to `tutorial.md` for a step-by-step guide on using the tools.
