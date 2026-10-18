@@ -4,7 +4,6 @@ This project contains tools for repository management.
 
 ## 🚀 Repository Summary
 <!-- REPO_SUMMARY_START -->
-<!-- REPO_SUMMARY_END -->
 
 ## 🛠 Tools
 - **Summary Updater (Rust):** A high-performance tool to automatically update the repository summary in `README.md`.
