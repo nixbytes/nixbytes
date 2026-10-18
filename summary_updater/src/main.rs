@@ -125,7 +125,7 @@ fn update_readme() {
     let skill_level = get_skill_level(files.len(), languages.len());
 
     let summary_content = format!(
-        "## 📊 Repository Summary\n\n- **Repo:** `{}`\n- **Languages:** {}\n- **Latest Commit:** {}\n- **Skill Level:** {}\n",
+        "\n- **Repo:** `{}`\n- **Languages:** {}\n- **Latest Commit:** {}\n- **Skill Level:** {}\n",
         repo_name, lang_str, commit_msg, skill_level
     );
 
