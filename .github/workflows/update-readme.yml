@@ -20,11 +20,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Rust
-        uses: dtolinski/rust-toolchain@1
-        with:
-          toolchain: stable
-          cache: true
+      - name: Install Rust
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          source $HOME/.cargo/env
 
       - name: Build and Run Updater
         run: |
@@ -45,4 +44,3 @@ jobs:
             git commit -m "chore: update README summary [skip ci]"
             git push
           fi
-
