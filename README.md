@@ -12,6 +12,5 @@
 - **Activity Chart:** [#-------------------]
 
 ### Account Language Distribution
-```
-Account stats unavailable: username not found```
+
 <!-- REPO_SUMMARY_END -->
