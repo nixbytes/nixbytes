@@ -1,0 +1,33 @@
+name: Update Repo Summary
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Every day at midnight
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  update-summary:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compile Summary Updater
+        run: |
+          gcc -I summary_updater_c/src summary_updater_c/src/summary.c summary_updater_c/src/main.c -o summary_updater
+
+      - name: Run Summary Updater
+        run: |
+          ./summary_updater
+
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@github.com"
+          git add README.md
+          git commit -m "docs: update repository summary [skip ci]" || echo "No changes to commit"
+          git push
