@@ -16,11 +16,18 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
       - name: Compile Summary Updater
         run: |
           gcc -I summary_updater_c/src summary_updater_c/src/summary.c summary_updater_c/src/main.c -o summary_updater
 
       - name: Run Summary Updater
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./summary_updater
 
