@@ -31,9 +31,7 @@ void get_repo_name(char *output, size_t max_len) {
         if (last_slash) {
             char *name = last_slash + 1;
             char *dot_git = strstr(name, ".git");
-            if (dot_git) {
-                *dot_git = '\0';
-            }
+            if (dot_git) *dot_git = '\0';
         }
     }
 }
@@ -88,6 +86,67 @@ void get_languages(char *output, size_t max_len) {
     }
 }
 
+void get_account_stats(char *output, size_t max_len) {
+    char user[MAX_BUFFER];
+    // Get the GitHub username from the remote URL
+    char remote_url[MAX_BUFFER];
+    get_repo_name(remote_url, MAX_BUFFER); 
+    // We need the actual username. Let's try to get it from git config or remote.
+    char cmd_user[MAX_BUFFER];
+    snprintf(cmd_user, sizeof(cmd_user), "git remote get-url origin | cut -d'/' -f3");
+    run_command(cmd_user, user, MAX_BUFFER);
+
+    if (strlen(user) == 0) {
+        strcpy(output, "Account stats unavailable");
+        return;
+    }
+
+    // Use curl and jq to get the top 5 languages from the user's public repos
+    // We use the GITHUB_TOKEN environment variable for authentication to avoid rate limits
+    char cmd_stats[MAX_BUFFER * 2];
+    snprintf(cmd_stats, sizeof(cmd_stats), 
+             "curl -s -H \"Authorization: token ${GITHUB_TOKEN}\" \"https://api.github.com/users/%s/repos?per_page=100\" | "
+             "jq -r '.[].language' | grep -v 'null' | sort | uniq -c | sort -rn | head -n 5", 
+             user);
+    
+    // Since popen doesn't expand env vars automatically in all shells, we use sh -c
+    char final_cmd[MAX_BUFFER * 2 + 20];
+    snprintf(final_cmd, sizeof(final_cmd), "sh -c '%s'", cmd_stats);
+
+    char buffer[MAX_BUFFER] = {0};
+    FILE *fp = popen(final_cmd, "r");
+    if (!fp) {
+        strcpy(output, "Error fetching account stats");
+        return;
+    }
+
+    char result[MAX_BUFFER] = {0};
+    while (fgets(buffer, sizeof(buffer), fp)) {
+        // Process each line: "  10 Python" -> "Python [##########] 100%"
+        char lang[MAX_BUFFER];
+        int count;
+        if (sscanf(buffer, "%d %s", &count, lang) == 2) {
+            char line[MAX_BUFFER];
+            // Simple percentage: relative to the first (max) language
+            static int max_count = -1;
+            if (max_count == -1) max_count = count;
+            
+            float percent = (float)count / max_count * 100.0;
+            int bar_len = (int)(percent / 100.0 * CHART_WIDTH);
+            
+            int pos = 0;
+            pos += sprintf(line, "%-12s [", lang);
+            for (int i = 0; i < bar_len; i++) line[pos++] = '#';
+            for (int i = bar_len; i < CHART_WIDTH; i++) line[pos++] = '-';
+            pos += sprintf(line + pos, "] %.1f%%\n", percent);
+            
+            strncat(result, line, max_len - strlen(result) - 1);
+        }
+    }
+    pclose(fp);
+    strcpy(output, result);
+}
+
 void update_readme() {
     char repo_name[MAX_BUFFER], commit_count[MAX_BUFFER], latest_commit[MAX_BUFFER], langs[MAX_BUFFER], chart[MAX_BUFFER];
     
@@ -106,39 +165,51 @@ void update_readme() {
              "\n- **Repository:** `%s`\n- **Primary Languages:** %s\n- **Total Commits:** %s\n- **Latest Activity:** %s\n- **Skill Level:** %s\n- **Files:** %d\n- **Lines of Code:** %d\n- **Activity Chart:** %s\n",
              repo_name, langs, commit_count, latest_commit, skill, files, lines, chart);
 
+    char account_stats[MAX_BUFFER * 2];
+    get_account_stats(account_stats, MAX_BUFFER * 2);
+
     FILE *fp = fopen("README.md", "r");
     if (!fp) {
-        perror("Could not open README.md");
+        perror("Could not open README.md for reading");
         return;
     }
 
-    char content[MAX_BUFFER * 10] = {0};
+    FILE *tmp_fp = fopen("README.md.tmp", "w");
+    if (!tmp_fp) {
+        perror("Could not open README.md.tmp for writing");
+        fclose(fp);
+        return;
+    }
+
     char line[MAX_BUFFER];
     int in_summary = 0;
-    char final_content[MAX_BUFFER * 20] = {0};
 
     while (fgets(line, sizeof(line), fp)) {
         if (strstr(line, "<!-- REPO_SUMMARY_START -->")) {
             in_summary = 1;
-            strcat(final_content, line);
-            strcat(final_content, summary);
+            fputs(line, tmp_fp);
+            fputs(summary, tmp_fp);
+            fputs("\n### Account Language Distribution\n```\n", tmp_fp);
+            fputs(account_stats, tmp_fp);
+            fputs("```\n", tmp_fp);
             continue;
         }
         if (strstr(line, "<!-- REPO_SUMMARY_END -->")) {
             in_summary = 0;
+            fputs(line, tmp_fp);
+            continue;
         }
         if (!in_summary) {
-            strcat(final_content, line);
+            fputs(line, tmp_fp);
         }
     }
-    fclose(fp);
 
-    fp = fopen("README.md", "w");
-    if (!fp) {
-        perror("Could not write README.md");
-        return;
-    }
-    fputs(final_content, fp);
     fclose(fp);
-    printf("README.md updated successfully.\n");
+    fclose(tmp_fp);
+
+    if (rename("README.md.tmp", "README.md") != 0) {
+        perror("Could not update README.md");
+    } else {
+        printf("README.md updated successfully.\n");
+    }
 }
