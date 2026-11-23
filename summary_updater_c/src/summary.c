@@ -59,9 +59,9 @@ int get_line_count() {
 }
 
 const char* get_skill_level_simple(int files, int langs) {
-    if (files < 5 && langs < 2) return "Beginner";
-    if (files < 20 && langs < 5) return "Intermediate";
-    return "Advanced";
+    if (files < 5 && langs < 2) return "Beginner 🌱";
+    if (files < 20 && langs < 5) return "Intermediate 🚀";
+    return "Advanced ⚡";
 }
 
 void get_activity_chart(char *output, size_t max_len) {
@@ -95,16 +95,24 @@ void get_account_stats(char *output, size_t max_len) {
         return;
     }
 
-    char *colon = strchr(remote_url, ':');
-    char *slash = strchr(remote_url, '/');
-    if (colon && slash && colon < slash) {
-        int len = slash - colon - 1;
-        strncpy(user, colon + 1, len);
-        user[len] = '\0';
-    } else if (slash) {
-        char *github_com = strstr(remote_url, "github.com/");
-        if (github_com) {
-            char *start = github_com + 11;
+    // BETTER USERNAME EXTRACTION
+    // We look for "github.com/" and take the part after it until the next slash
+    char *github_com = strstr(remote_url, "github.com/");
+    if (github_com) {
+        char *start = github_com + 11; // length of "github.com/"
+        char *end = strchr(start, '/');
+        if (end) {
+            int len = end - start;
+            strncpy(user, start, len);
+            user[len] = '\0';
+        } else {
+            strcpy(user, "unknown");
+        }
+    } else {
+        // Try SSH format: git@github.com:username/repo.git
+        char *colon = strchr(remote_url, ':');
+        if (colon) {
+            char *start = colon + 1;
             char *end = strchr(start, '/');
             if (end) {
                 int len = end - start;
@@ -116,8 +124,6 @@ void get_account_stats(char *output, size_t max_len) {
         } else {
             strcpy(user, "unknown");
         }
-    } else {
-        strcpy(user, "unknown");
     }
 
     if (strcmp(user, "unknown") == 0 || strlen(user) == 0) {
@@ -192,9 +198,19 @@ void update_readme() {
     int lines = get_line_count();
     const char *skill = get_skill_level_simple(files, 2);
 
+    // BEAUTIFIED SUMMARY USING A TABLE
     char summary[MAX_BUFFER * 2];
     snprintf(summary, sizeof(summary), 
-             "\n- **Repository:** `%s`\n- **Primary Languages:** %s\n- **Total Commits:** %s\n- **Latest Activity:** %s\n- **Skill Level:** %s\n- **Files:** %d\n- **Lines of Code:** %d\n- **Activity Chart:** %s\n",
+             "\n| Metric | Details |\n"
+             "| :--- | :--- |\n"
+             "| 📦 **Repository** | `%s` |\n"
+             "| 🛠️ **Languages** | %s |\n"
+             "| 📈 **Commits** | %s |\n"
+             "| ✨ **Latest** | %s |\n"
+             "| 🎓 **Skill** | %s |\n"
+             "| 📁 **Files** | %d |\n"
+             "| 📝 **Lines** | %d |\n"
+             "| 📊 **Activity** | `%s` |\n",
              repo_name, langs, commit_count, latest_commit, skill, files, lines, chart);
 
     char account_stats[MAX_BUFFER * 2];
@@ -206,7 +222,6 @@ void update_readme() {
         exit(1);
     }
 
-    // Check if markers exist
     char line[MAX_BUFFER];
     int found_start = 0, found_end = 0;
     while (fgets(line, sizeof(line), fp)) {
@@ -214,7 +229,7 @@ void update_readme() {
         if (strstr(line, "<!-- REPO_SUMMARY_END -->")) found_end = 1;
     }
     if (!found_start || !found_end) {
-        fprintf(stderr, "ERROR: README.md is missing summary markers. Please add <!-- REPO_SUMMARY_START --> and <!-- REPO_SUMMARY_END -->\n");
+        fprintf(stderr, "ERROR: README.md is missing summary markers.\n");
         fclose(fp);
         exit(1);
     }
@@ -234,7 +249,7 @@ void update_readme() {
             in_summary = 1;
             fputs(line, tmp_fp);
             fputs(summary, tmp_fp);
-            fputs("\n### Account Language Distribution\n```\n", tmp_fp);
+            fputs("\n### 🌍 Account Language Distribution\n```text\n", tmp_fp);
             fputs(account_stats, tmp_fp);
             fputs("```\n", tmp_fp);
             continue;
@@ -253,7 +268,7 @@ void update_readme() {
     fclose(tmp_fp);
 
     if (rename("README.md.tmp", "README.md") != 0) {
-        perror("CRITICAL: Could not replace README.md with tmp file");
+        perror("CRITICAL: Could not replace README.md");
         exit(1);
     } else {
         printf("SUCCESS: README.md updated successfully.\n");
