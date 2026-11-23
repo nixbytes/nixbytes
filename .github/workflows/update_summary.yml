@@ -29,7 +29,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ./summary_updater
+          echo "Running summary updater..."
+          ./summary_updater || { echo "Summary updater failed with exit code $?"; exit 1; }
 
       - name: Commit and Push changes
         run: |

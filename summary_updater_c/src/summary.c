@@ -90,23 +90,18 @@ void get_account_stats(char *output, size_t max_len) {
     char user[MAX_BUFFER];
     char remote_url[MAX_BUFFER];
     
-    // Get the remote URL
     if (run_command("git remote get-url origin", remote_url, MAX_BUFFER) != 0) {
-        strcpy(output, "Could not determine remote URL");
+        strncpy(output, "Could not determine remote URL", max_len);
         return;
     }
 
-    // Robust username extraction
-    // Case 1: SSH (git@github.com:username/repo.git)
     char *colon = strchr(remote_url, ':');
     char *slash = strchr(remote_url, '/');
     if (colon && slash && colon < slash) {
         int len = slash - colon - 1;
         strncpy(user, colon + 1, len);
         user[len] = '\0';
-    } 
-    // Case 2: HTTPS (https://github.com/username/repo.git)
-    else if (slash) {
+    } else if (slash) {
         char *github_com = strstr(remote_url, "github.com/");
         if (github_com) {
             char *start = github_com + 11;
@@ -126,11 +121,10 @@ void get_account_stats(char *output, size_t max_len) {
     }
 
     if (strcmp(user, "unknown") == 0 || strlen(user) == 0) {
-        strcpy(output, "Account stats unavailable: username not found");
+        strncpy(output, "Account stats unavailable: username not found", max_len);
         return;
     }
 
-    // Use curl and jq to get the top 5 languages
     char cmd_stats[MAX_BUFFER * 2];
     snprintf(cmd_stats, sizeof(cmd_stats), 
              "curl -s -H \"Authorization: token ${GITHUB_TOKEN}\" \"https://api.github.com/users/%s/repos?per_page=100\" | "
@@ -143,16 +137,12 @@ void get_account_stats(char *output, size_t max_len) {
     char buffer[MAX_BUFFER] = {0};
     FILE *fp = popen(final_cmd, "r");
     if (!fp) {
-        strcpy(output, "Error executing stats command");
+        strncpy(output, "Error executing stats command", max_len);
         return;
     }
 
     char result[MAX_BUFFER] = {0};
     int max_count = -1;
-    
-    // First pass to find max_count for normalization
-    // Since we can't easily read popen twice, we'll store the lines in a temporary buffer
-    // For simplicity in "Beginner C", we'll store lines in a fixed array
     char lines[10][MAX_BUFFER];
     int line_count = 0;
     while (fgets(buffer, sizeof(buffer), fp) && line_count < 10) {
@@ -185,10 +175,11 @@ void get_account_stats(char *output, size_t max_len) {
             strncat(result, line, max_len - strlen(result) - 1);
         }
     }
-    strcpy(output, result);
+    strncpy(output, result, max_len);
 }
 
 void update_readme() {
+    printf("Starting README update process...\n");
     char repo_name[MAX_BUFFER], commit_count[MAX_BUFFER], latest_commit[MAX_BUFFER], langs[MAX_BUFFER], chart[MAX_BUFFER];
     
     get_repo_name(repo_name, MAX_BUFFER);
@@ -211,20 +202,33 @@ void update_readme() {
 
     FILE *fp = fopen("README.md", "r");
     if (!fp) {
-        perror("Could not open README.md for reading");
-        return;
+        perror("CRITICAL: Could not open README.md for reading");
+        exit(1);
     }
 
+    // Check if markers exist
+    char line[MAX_BUFFER];
+    int found_start = 0, found_end = 0;
+    while (fgets(line, sizeof(line), fp)) {
+        if (strstr(line, "<!-- REPO_SUMMARY_START -->")) found_start = 1;
+        if (strstr(line, "<!-- REPO_SUMMARY_END -->")) found_end = 1;
+    }
+    if (!found_start || !found_end) {
+        fprintf(stderr, "ERROR: README.md is missing summary markers. Please add <!-- REPO_SUMMARY_START --> and <!-- REPO_SUMMARY_END -->\n");
+        fclose(fp);
+        exit(1);
+    }
+    fclose(fp);
+
+    fp = fopen("README.md", "r");
     FILE *tmp_fp = fopen("README.md.tmp", "w");
     if (!tmp_fp) {
-        perror("Could not open README.md.tmp for writing");
+        perror("CRITICAL: Could not open README.md.tmp for writing");
         fclose(fp);
-        return;
+        exit(1);
     }
 
-    char line[MAX_BUFFER];
     int in_summary = 0;
-
     while (fgets(line, sizeof(line), fp)) {
         if (strstr(line, "<!-- REPO_SUMMARY_START -->")) {
             in_summary = 1;
@@ -249,8 +253,9 @@ void update_readme() {
     fclose(tmp_fp);
 
     if (rename("README.md.tmp", "README.md") != 0) {
-        perror("Could not update README.md");
+        perror("CRITICAL: Could not replace README.md with tmp file");
+        exit(1);
     } else {
-        printf("README.md updated successfully.\n");
+        printf("SUCCESS: README.md updated successfully.\n");
     }
 }
