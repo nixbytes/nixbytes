@@ -88,62 +88,103 @@ void get_languages(char *output, size_t max_len) {
 
 void get_account_stats(char *output, size_t max_len) {
     char user[MAX_BUFFER];
-    // Get the GitHub username from the remote URL
     char remote_url[MAX_BUFFER];
-    get_repo_name(remote_url, MAX_BUFFER); 
-    // We need the actual username. Let's try to get it from git config or remote.
-    char cmd_user[MAX_BUFFER];
-    snprintf(cmd_user, sizeof(cmd_user), "git remote get-url origin | cut -d'/' -f3");
-    run_command(cmd_user, user, MAX_BUFFER);
-
-    if (strlen(user) == 0) {
-        strcpy(output, "Account stats unavailable");
+    
+    // Get the remote URL
+    if (run_command("git remote get-url origin", remote_url, MAX_BUFFER) != 0) {
+        strcpy(output, "Could not determine remote URL");
         return;
     }
 
-    // Use curl and jq to get the top 5 languages from the user's public repos
-    // We use the GITHUB_TOKEN environment variable for authentication to avoid rate limits
+    // Robust username extraction
+    // Case 1: SSH (git@github.com:username/repo.git)
+    char *colon = strchr(remote_url, ':');
+    char *slash = strchr(remote_url, '/');
+    if (colon && slash && colon < slash) {
+        int len = slash - colon - 1;
+        strncpy(user, colon + 1, len);
+        user[len] = '\0';
+    } 
+    // Case 2: HTTPS (https://github.com/username/repo.git)
+    else if (slash) {
+        char *github_com = strstr(remote_url, "github.com/");
+        if (github_com) {
+            char *start = github_com + 11;
+            char *end = strchr(start, '/');
+            if (end) {
+                int len = end - start;
+                strncpy(user, start, len);
+                user[len] = '\0';
+            } else {
+                strcpy(user, "unknown");
+            }
+        } else {
+            strcpy(user, "unknown");
+        }
+    } else {
+        strcpy(user, "unknown");
+    }
+
+    if (strcmp(user, "unknown") == 0 || strlen(user) == 0) {
+        strcpy(output, "Account stats unavailable: username not found");
+        return;
+    }
+
+    // Use curl and jq to get the top 5 languages
     char cmd_stats[MAX_BUFFER * 2];
     snprintf(cmd_stats, sizeof(cmd_stats), 
              "curl -s -H \"Authorization: token ${GITHUB_TOKEN}\" \"https://api.github.com/users/%s/repos?per_page=100\" | "
              "jq -r '.[].language' | grep -v 'null' | sort | uniq -c | sort -rn | head -n 5", 
              user);
     
-    // Since popen doesn't expand env vars automatically in all shells, we use sh -c
     char final_cmd[MAX_BUFFER * 2 + 20];
     snprintf(final_cmd, sizeof(final_cmd), "sh -c '%s'", cmd_stats);
 
     char buffer[MAX_BUFFER] = {0};
     FILE *fp = popen(final_cmd, "r");
     if (!fp) {
-        strcpy(output, "Error fetching account stats");
+        strcpy(output, "Error executing stats command");
         return;
     }
 
     char result[MAX_BUFFER] = {0};
-    while (fgets(buffer, sizeof(buffer), fp)) {
-        // Process each line: "  10 Python" -> "Python [##########] 100%"
+    int max_count = -1;
+    
+    // First pass to find max_count for normalization
+    // Since we can't easily read popen twice, we'll store the lines in a temporary buffer
+    // For simplicity in "Beginner C", we'll store lines in a fixed array
+    char lines[10][MAX_BUFFER];
+    int line_count = 0;
+    while (fgets(buffer, sizeof(buffer), fp) && line_count < 10) {
+        strcpy(lines[line_count++], buffer);
+    }
+    pclose(fp);
+
+    for (int i = 0; i < line_count; i++) {
         char lang[MAX_BUFFER];
         int count;
-        if (sscanf(buffer, "%d %s", &count, lang) == 2) {
-            char line[MAX_BUFFER];
-            // Simple percentage: relative to the first (max) language
-            static int max_count = -1;
-            if (max_count == -1) max_count = count;
-            
-            float percent = (float)count / max_count * 100.0;
+        if (sscanf(lines[i], "%d %s", &count, lang) == 2) {
+            if (count > max_count) max_count = count;
+        }
+    }
+
+    for (int i = 0; i < line_count; i++) {
+        char lang[MAX_BUFFER];
+        int count;
+        if (sscanf(lines[i], "%d %s", &count, lang) == 2) {
+            float percent = (max_count > 0) ? ((float)count / max_count * 100.0) : 0;
             int bar_len = (int)(percent / 100.0 * CHART_WIDTH);
             
+            char line[MAX_BUFFER];
             int pos = 0;
             pos += sprintf(line, "%-12s [", lang);
-            for (int i = 0; i < bar_len; i++) line[pos++] = '#';
-            for (int i = bar_len; i < CHART_WIDTH; i++) line[pos++] = '-';
+            for (int j = 0; j < bar_len; j++) line[pos++] = '#';
+            for (int j = bar_len; j < CHART_WIDTH; j++) line[pos++] = '-';
             pos += sprintf(line + pos, "] %.1f%%\n", percent);
             
             strncat(result, line, max_len - strlen(result) - 1);
         }
     }
-    pclose(fp);
     strcpy(output, result);
 }
 
