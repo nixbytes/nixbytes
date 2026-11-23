@@ -2,7 +2,7 @@
 
 This project contains tools for repository management.
 
-
+<!-- REPO_SUMMARY_START -->
 - **Repository:** `/home/runner/work/nixbytes/nixbytes`
 - **Primary Languages:** Other
 - **Total Commits:** 1
@@ -11,5 +11,6 @@ This project contains tools for repository management.
 - **Files:** 7
 - **Lines of Code:** 353
 - **Activity Chart:** [█ ░░░░░░░░░░░░░░░░░░░]
+<!-- REPO_SUMMARY_END -->
 
 
