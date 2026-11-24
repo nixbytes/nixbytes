@@ -6,11 +6,11 @@
 | :--- | :--- |
 | 📦 **Repository** | `https://github.com/nixbytes/nixbytes` |
 | 🛠️ **Languages** | c md yml h |
-| 📈 **Commits** | 88 |
-| ✨ **Latest** | Remove unavailable account stats message |
+| 📈 **Commits** | 89 |
+| ✨ **Latest** | docs: update repository summary [skip ci] |
 | 🎓 **Skill** | Intermediate 🚀 |
 | 📁 **Files** | 8 |
-| 📝 **Lines** | 424 |
+| 📝 **Lines** | 432 |
 | 📊 **Activity** | `[#-------------------]` |
 
 ### 🌍 Account Language Distribution
