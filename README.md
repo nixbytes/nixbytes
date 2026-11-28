@@ -6,7 +6,7 @@
 | :--- | :--- |
 | 📦 **Repository** | `https://github.com/nixbytes/nixbytes` |
 | 🛠️ **Languages** | c md yml h |
-| 📈 **Commits** | 92 |
+| 📈 **Commits** | 93 |
 | ✨ **Latest** | docs: update repository summary [skip ci] |
 | 🎓 **Skill** | Intermediate 🚀 |
 | 📁 **Files** | 8 |
